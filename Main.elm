@@ -1,22 +1,30 @@
 import Html.App as App
+import Html
 
-import GameData exposing (Grid, emptyGrid)
-import GameDisplay exposing (viewGrid)
+import GameData
+import GameDisplay
+import GameInput
+
+import Debug
 
 main =
-  App.beginnerProgram { model = emptyGrid, view = view, update = update }
+  App.beginnerProgram { 
+    model = { 
+      grid = GameData.emptyGrid,
+      player = GameData.User
+    }, 
+    view = view,
+    update = update 
+  }
 
 
-type alias Model = Grid
-type Msg = Increment | Decrement
+type alias Model = { grid: GameData.Grid, player: GameData.Player }
 
-update : Msg -> Model -> Model
+update : GameInput.Input -> Model -> Model
 update msg model =
-  case msg of
-    Increment ->
-      model
+  let updatedModel = case msg of
+    GameInput.Click pos -> model
+  in Debug.log (toString msg) updatedModel
 
-    Decrement ->
-      model
-
-view = viewGrid
+view : Model -> Html.Html GameInput.Input
+view state = GameDisplay.viewGrid state.grid
