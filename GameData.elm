@@ -1,8 +1,8 @@
 module GameData exposing (..)
 
 import Array as A
+import Set as S
 import Maybe exposing (..)
-import Debug
 
 type Player = User | Computer
 
@@ -16,7 +16,7 @@ type alias BoardLocation = { i: Int, j: Int }
 type alias CellLocation = { r: Int, c: Int }
 type alias Position = { board: BoardLocation, cell: CellLocation }
 
-type CellValue = Empty | Blue | Red
+type CellValue = Empty | Filled Player
 type alias Cell = { position: Position, value: CellValue }
 
 type alias Board = {
@@ -81,6 +81,39 @@ insertCell cell board =
 
 setCell pos value grid =
   withDefault grid <|
-    (Debug.log "board" <| extractBoard pos.board grid) `andThen` \board ->
-      (Debug.log "cell" <| extractCell pos.cell board) `andThen` \cell ->
+    extractBoard pos.board grid `andThen` \board ->
+      extractCell pos.cell board `andThen` \cell ->
         Just <| insertBoard (insertCell { cell | value = value } board) grid
+
+boardWinner : Board -> Maybe Player
+boardWinner board =
+  let extractLine line = List.filterMap (\idx -> A.get idx board.data) line
+      lines = List.map extractLine possibleWinLines
+  in oneOf (List.map lineWinner lines)
+
+find : (a -> Bool) -> List a -> Maybe a
+find pred xs =
+  case xs of
+    [] -> Nothing
+    x :: xs' -> if pred x then Just x else find pred xs'
+
+lineWinner : List Cell -> Maybe Player
+lineWinner cells =
+  let getPlayer cell = case cell.value of
+                         Empty -> Nothing
+                         Filled player -> Just player
+      players = List.filterMap getPlayer cells
+  in if (List.length players == 3 && allSame players)
+     then List.head players
+     else Nothing
+
+allSame : List a -> Bool
+allSame xs =
+  case List.head xs of
+    Nothing -> True
+    Just x0 -> List.all (\x -> x == x0) xs
+
+possibleWinLines = 
+  [ [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6] ]
