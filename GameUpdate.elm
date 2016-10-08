@@ -3,5 +3,6 @@ module GameUpdate exposing (..)
 import GameData exposing (..)
 import GameInput exposing (..)
 
-handleClick : Click -> Game -> Game
-handleClick click game = game
+handleClick : Position -> Player -> Grid -> Result String Grid
+handleClick pos player grid =
+  Ok (setCell pos Red grid)
