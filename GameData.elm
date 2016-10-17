@@ -17,14 +17,22 @@ type alias CellLocation = { r: Int, c: Int }
 type alias Position = { board: BoardLocation, cell: CellLocation }
 
 type CellValue = Empty | Filled Player
-type alias Cell = { position: Position, value: CellValue }
+type alias Cell = 
+  { position: Position
+  , value: CellValue
+  }
 
-type alias Board = {
-  data : A.Array Cell,
-  location: BoardLocation }
+type IsActive = Active | Inactive
+type BoardValue = Cells (A.Array Cell) IsActive
+                | WonBoard Player
+type alias Board = 
+  { location: BoardLocation
+  , value : BoardValue
+  }
 
-type alias Grid = {
-  data : A.Array Board }
+type alias Grid = 
+  { data : A.Array Board 
+  }
 
 chunks : Int -> List a -> List (List a)
 chunks n xs =
@@ -34,28 +42,27 @@ chunks n xs =
 
 
 emptyBoard : BoardLocation -> Board
-emptyBoard location = {
-  location = location,
-  data = A.fromList
-           [ { position = { board = location, cell = {r=0,c=0} }, value = Empty },
-             { position = { board = location, cell = {r=0,c=1} }, value = Empty },
-             { position = { board = location, cell = {r=0,c=2} }, value = Empty },
-             { position = { board = location, cell = {r=1,c=0} }, value = Empty },
-             { position = { board = location, cell = {r=1,c=1} }, value = Empty },
-             { position = { board = location, cell = {r=1,c=2} }, value = Empty },
-             { position = { board = location, cell = {r=2,c=0} }, value = Empty },
-             { position = { board = location, cell = {r=2,c=1} }, value = Empty },
-             { position = { board = location, cell = {r=2,c=2} }, value = Empty } ] }
-
-boardRows : Board -> List (List Cell)
-boardRows board = chunks 3 (A.toList board.data)
+emptyBoard boardLoc =
+  let
+      mkCell cellLoc = 
+        { position = { board = boardLoc, cell = cellLoc }, value = Empty }
+      cells = 
+        [ mkCell {r=0,c=0}, mkCell {r=0,c=1}, mkCell {r=0,c=2} 
+        , mkCell {r=1,c=0}, mkCell {r=1,c=1}, mkCell {r=1,c=2} 
+        , mkCell {r=2,c=0}, mkCell {r=2,c=1}, mkCell {r=2,c=2}
+        ]
+  in 
+      { location = boardLoc
+      , value = Cells (A.fromList cells) Active
+      }
 
 emptyGrid : Grid
-emptyGrid = {
-  data = A.fromList [ 
+emptyGrid =
+  { data = A.fromList [ 
            emptyBoard {i=0,j=0}, emptyBoard {i=0,j=1}, emptyBoard {i=0,j=2},
            emptyBoard {i=1,j=0}, emptyBoard {i=1,j=1}, emptyBoard {i=1,j=2},
-           emptyBoard {i=2,j=0}, emptyBoard {i=2,j=1}, emptyBoard {i=2,j=2} ] }
+           emptyBoard {i=2,j=0}, emptyBoard {i=2,j=1}, emptyBoard {i=2,j=2} ]
+  }
 
 gridRows : Grid -> List (List Board)
 gridRows grid = chunks 3 (A.toList grid.data)
@@ -64,7 +71,10 @@ extractBoard : BoardLocation -> Grid -> Maybe Board
 extractBoard loc grid = A.get (3*loc.i + loc.j) grid.data
 
 extractCell : CellLocation -> Board -> Maybe Cell
-extractCell loc board = A.get (3*loc.r + loc.c) board.data
+extractCell loc board =
+  case board.value of
+    WonBoard _ -> Nothing
+    Cells cells _ -> A.get (3*loc.r + loc.c) cells
 
 getCell : Position -> Grid -> Maybe Cell
 getCell pos grid = Just grid `andThen` extractBoard pos.board `andThen` extractCell pos.cell
@@ -76,20 +86,25 @@ insertBoard board grid =
 
 insertCell : Cell -> Board -> Board
 insertCell cell board =
-  let idx = 3 * cell.position.cell.r + cell.position.cell.c
-  in { board | data = A.set idx cell board.data }
+  case board.value of
+    WonBoard _ -> board
+    Cells cells isActive ->
+      let 
+          idx = 3 * cell.position.cell.r + cell.position.cell.c
+          newCells = A.set idx cell cells
+      in case boardWinner newCells of
+          Just winner -> 
+            { board | value = WonBoard winner }
+          Nothing ->
+            { board | value = Cells newCells isActive }
 
-setCell pos value grid =
-  withDefault grid <|
-    extractBoard pos.board grid `andThen` \board ->
-      extractCell pos.cell board `andThen` \cell ->
-        Just <| insertBoard (insertCell { cell | value = value } board) grid
-
-boardWinner : Board -> Maybe Player
-boardWinner board =
-  let extractLine line = List.filterMap (\idx -> A.get idx board.data) line
+boardWinner : A.Array Cell -> Maybe Player
+boardWinner cells =
+  let 
+      extractLine line = List.filterMap (\idx -> A.get idx cells) line
       lines = List.map extractLine possibleWinLines
-  in oneOf (List.map lineWinner lines)
+  in
+      oneOf (List.map lineWinner lines)
 
 find : (a -> Bool) -> List a -> Maybe a
 find pred xs =

@@ -7,15 +7,20 @@ import GameInput
 import GameUpdate
 
 main =
-  App.beginnerProgram { 
-    model = { 
-      grid = GameData.emptyGrid,
-      player = GameData.User }, 
-    view = view,
-    update = update }
+  App.beginnerProgram 
+    { model = 
+      { grid = GameData.emptyGrid
+      , player = GameData.User
+      } 
+    , view = view
+    , update = update
+    }
 
 
-type alias Model = { grid: GameData.Grid, player: GameData.Player }
+type alias Model = 
+  { grid: GameData.Grid
+  , player: GameData.Player
+  }
 
 update : GameInput.Input -> Model -> Model
 update msg model =
@@ -26,7 +31,9 @@ update msg model =
           model
 
         Ok newGrid -> 
-          { model | player = GameData.otherPlayer model.player, grid = newGrid }
+          { model | player = GameData.otherPlayer model.player
+                  , grid = newGrid
+                  }
 
 view : Model -> Html.Html GameInput.Input
 view state = GameDisplay.viewGrid state.grid

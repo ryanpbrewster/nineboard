@@ -7,6 +7,7 @@ import GameData exposing (..)
 import GameInput exposing (..)
 import Array as A
 
+type alias Color = String
 playerColor player =
   case player of
     User -> "blue"
@@ -15,39 +16,54 @@ playerColor player =
 wrapTableElement : Html.Html a -> Html.Html a
 wrapTableElement elem = Html.td [] [elem]
 
-viewCell : Cell -> Html.Html Input
-viewCell cell =
+makeTable : Int -> List (Html.Html a) -> Html.Html a
+makeTable n elements =
+  let
+      rows = List.map (\row -> Html.tr [] row) (chunks n (List.map wrapTableElement elements))
+  in
+      Html.table [Attr.style [("padding", "10px")]] rows
+
+makeBlob : Color -> List (Html.Html a) -> Html.Html a
+makeBlob color elements =
+  Html.div 
+    [Attr.style [
+      ("width", "109px"),
+      ("height", "109px"),
+      ("border-radius", "10px"),
+      ("background-color", color)]]
+    elements
+
+viewCell : IsActive -> Cell -> Html.Html Input
+viewCell isActive cell =
   let color = case cell.value of
                 Empty -> "white"
                 Filled player -> playerColor player
-      action = Events.onClick (Click cell.position)
       style = Attr.style [("background-color", color), ("width", "25px"), ("height", "25px"), ("margin", "auto")]
-  in Html.button [ action, style ] [ Html.text " " ]
-
-viewRow : List Cell -> Html.Html Input
-viewRow row = Html.tr [] (List.map (viewCell >> wrapTableElement) row)
+  in case isActive of
+      Active -> Html.button [ style, Events.onClick (Click cell.position) ] [ Html.text " " ]
+      Inactive -> Html.div [ style ] [ Html.text " " ]
 
 viewBoard : Board -> Html.Html Input
 viewBoard board =
-  case boardWinner board of
-    Nothing ->
-      Html.table
-        [Attr.style [("padding", "10px")]]
-        (List.map viewRow (boardRows board))
-    Just player ->
-      Html.div 
-        [Attr.style [
-          ("margin", "auto"),
-          ("width", "89px"),
-          ("height", "89px"),
-          ("border-radius", "10px"),
-          ("background-color", playerColor player)]]
-        []
+  case board.value of
+    Cells cells isActive -> viewCells cells isActive
+    WonBoard winner -> viewWonBoard winner
 
+viewCells cells isActive =
+  let
+      element = makeTable 3 (List.map (viewCell isActive) (A.toList cells))
+      color = case isActive of
+        Active -> "yellow"
+        Inactive -> "grey"
+  in 
+      makeBlob color [element]
 
-viewBoardRow : List Board -> Html.Html Input
-viewBoardRow row = Html.tr [] (List.map (viewBoard >> wrapTableElement) row)
+viewWonBoard winner =
+  makeBlob (playerColor winner) []
 
 viewGrid : Grid -> Html.Html Input
 viewGrid grid =
-  Html.table [] (List.map viewBoardRow (gridRows grid))
+  let
+      boardElements = A.map viewBoard grid.data
+  in 
+      makeTable 3 (A.toList boardElements)
