@@ -9,6 +9,7 @@ handleClick : Position -> Player -> Grid -> Result String Grid
 handleClick pos player grid =
   Ok (setCell pos (Filled player) grid)
 
+setCell : Position -> CellValue -> Grid -> Grid
 setCell pos value grid =
   withDefault grid <|
     extractBoard pos.board grid `andThen` \board ->
