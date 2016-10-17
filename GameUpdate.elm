@@ -17,7 +17,7 @@ setCell pos value grid =
             newGrid = insertBoard (insertCell { cell | value = value } board) grid
             nextActive = {i = pos.cell.r, j = pos.cell.c}
         in 
-            extractBoard nextActive grid `andThen` \nextBoard ->
+            extractBoard nextActive newGrid `andThen` \nextBoard ->
               Just <| case nextBoard.value of
                 WonBoard _ -> activateEntireGrid newGrid
                 Cells _ _ -> activateBoard nextActive newGrid
