@@ -1,11 +1,23 @@
-module GameDisplay exposing (..)
+module Display exposing (..)
 
 import Html
 import Html.Attributes as Attr
 import Html.Events as Events
-import GameData exposing (..)
-import GameInput exposing (..)
+import Data exposing (..)
+import Input exposing (..)
 import Array as A
+
+view : GameState -> Html.Html Input
+view state = displayGrid (configureOptions state) state.grid
+
+type alias Options =
+  { activeBoardColor: Color
+  }
+
+configureOptions : GameState -> Options
+configureOptions state =
+  { activeBoardColor = playerColor state.currentPlayer
+  }
 
 type alias Color = String
 playerColor player =
@@ -43,27 +55,27 @@ viewCell isActive cell =
       Active -> Html.button [ style, Events.onClick (Click cell.position) ] [ Html.text " " ]
       Inactive -> Html.div [ style ] [ Html.text " " ]
 
-viewBoard : Board -> Html.Html Input
-viewBoard board =
+viewBoard : Options -> Board -> Html.Html Input
+viewBoard options board =
   case board.value of
-    Cells cells isActive -> viewCells cells isActive
-    WonBoard winner -> viewWonBoard winner
+    Cells cells isActive -> viewCells options cells isActive
+    WonBoard winner -> viewWonBoard options winner
 
-viewCells cells isActive =
+viewCells options cells isActive =
   let
       element = makeTable 3 (List.map (viewCell isActive) (A.toList cells))
       color = case isActive of
-        Active -> "yellow"
+        Active -> options.activeBoardColor
         Inactive -> "grey"
   in 
       makeBlob color [element]
 
-viewWonBoard winner =
+viewWonBoard options winner =
   makeBlob (playerColor winner) []
 
-viewGrid : Grid -> Html.Html Input
-viewGrid grid =
+displayGrid : Options -> Grid -> Html.Html Input
+displayGrid options grid =
   let
-      boardElements = A.map viewBoard grid.data
+      boardElements = A.map (viewBoard options) grid.data
   in 
       makeTable 3 (A.toList boardElements)

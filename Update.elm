@@ -1,13 +1,21 @@
-module GameUpdate exposing (..)
+module Update exposing (..)
 
-import GameData exposing (..)
-import GameInput exposing (..)
+import Data exposing (..)
+import Input exposing (..)
 import Maybe exposing (..)
 import Array as A
 
-handleClick : Position -> Player -> Grid -> Result String Grid
-handleClick pos player grid =
-  Ok (setCell pos (Filled player) grid)
+update : Input -> GameState -> GameState
+update msg state =
+  case msg of
+    Click pos -> handleClick pos state
+
+handleClick : Position -> GameState -> GameState
+handleClick pos state =
+  { state
+    | grid = setCell pos (Filled state.currentPlayer) state.grid
+    , currentPlayer = otherPlayer state.currentPlayer
+    }
 
 setCell : Position -> CellValue -> Grid -> Grid
 setCell pos value grid =

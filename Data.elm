@@ -1,8 +1,19 @@
-module GameData exposing (..)
+module Data exposing (..)
 
 import Array as A
 import Set as S
 import Maybe exposing (..)
+
+type alias GameState = 
+  { grid: Grid
+  , currentPlayer: Player
+  }
+
+initialState : GameState
+initialState =
+    { grid = emptyGrid
+    , currentPlayer = User
+    }
 
 type Player = User | Computer
 
@@ -13,7 +24,21 @@ otherPlayer player =
     Computer -> User
 
 type alias BoardLocation = { i: Int, j: Int }
+boardLocations : List BoardLocation
+boardLocations =
+  [ {i=0,j=0}, {i=0,j=1}, {i=0,j=2}
+  , {i=1,j=0}, {i=1,j=1}, {i=1,j=2}
+  , {i=2,j=0}, {i=2,j=1}, {i=2,j=2}
+  ]
 type alias CellLocation = { r: Int, c: Int }
+
+cellLocations : List CellLocation
+cellLocations =
+  [ {r=0,c=0}, {r=0,c=1}, {r=0,c=2}
+  , {r=1,c=0}, {r=1,c=1}, {r=1,c=2}
+  , {r=2,c=0}, {r=2,c=1}, {r=2,c=2}
+  ]
+
 type alias Position = { board: BoardLocation, cell: CellLocation }
 
 type CellValue = Empty | Filled Player
@@ -33,6 +58,7 @@ type alias Board =
 type alias Grid = 
   { data : A.Array Board 
   }
+
 
 chunks : Int -> List a -> List (List a)
 chunks n xs =
