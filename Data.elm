@@ -3,6 +3,7 @@ module Data exposing (..)
 import Array as A
 import Set as S
 import Maybe exposing (..)
+import Util exposing (..)
 
 type alias GameState = 
   { grid: Grid
@@ -59,12 +60,6 @@ type alias Grid =
   { data : A.Array Board 
   }
 
-
-chunks : Int -> List a -> List (List a)
-chunks n xs =
-  if List.isEmpty xs 
-  then [] 
-  else List.take n xs :: chunks n (List.drop n xs)
 
 
 emptyBoard : BoardLocation -> Board
@@ -132,12 +127,6 @@ boardWinner cells =
   in
       oneOf (List.map lineWinner lines)
 
-find : (a -> Bool) -> List a -> Maybe a
-find pred xs =
-  case xs of
-    [] -> Nothing
-    x :: xs' -> if pred x then Just x else find pred xs'
-
 lineWinner : List Cell -> Maybe Player
 lineWinner cells =
   let getPlayer cell = case cell.value of
@@ -147,12 +136,6 @@ lineWinner cells =
   in if (List.length players == 3 && allSame players)
      then List.head players
      else Nothing
-
-allSame : List a -> Bool
-allSame xs =
-  case List.head xs of
-    Nothing -> True
-    Just x0 -> List.all (\x -> x == x0) xs
 
 possibleWinLines = 
   [ [0,1,2], [3,4,5], [6,7,8],

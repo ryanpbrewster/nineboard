@@ -5,6 +5,7 @@ import Html.Attributes as Attr
 import Html.Events as Events
 import Data exposing (..)
 import Input exposing (..)
+import Util exposing (..)
 import Array as A
 
 view : GameState -> Html.Html Input
