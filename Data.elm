@@ -8,12 +8,14 @@ import Util exposing (..)
 type alias GameState = 
   { grid: Grid
   , currentPlayer: Player
+  , mousePosition: Maybe Position
   }
 
 initialState : GameState
 initialState =
     { grid = emptyGrid
     , currentPlayer = User
+    , mousePosition = Nothing
     }
 
 type Player = User | Computer

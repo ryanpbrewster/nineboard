@@ -4,17 +4,24 @@ import Data exposing (..)
 import Input exposing (..)
 import Maybe exposing (..)
 import Array as A
+import Debug
 
 update : Input -> GameState -> GameState
 update msg state =
   case msg of
     Click pos -> handleClick pos state
+    MouseOver pos -> handleMouseOver pos state
+
+handleMouseOver : Position -> GameState -> GameState
+handleMouseOver pos state =
+  { state | mousePosition = Just pos } 
 
 handleClick : Position -> GameState -> GameState
 handleClick pos state =
   { state
     | grid = setCell pos (Filled state.currentPlayer) state.grid
     , currentPlayer = otherPlayer state.currentPlayer
+    , mousePosition = Nothing
     }
 
 setCell : Position -> CellValue -> Grid -> Grid

@@ -12,12 +12,20 @@ view : GameState -> Html.Html Input
 view state = displayGrid (configureOptions state) state.grid
 
 type alias Options =
-  { activeBoardColor: Color
+  { activeBoardColor : Color
+  , inactiveBoardColor : Color
+  , activeCellColor : Color
+  , emptyCellColor : Color
+  , mousePosition : Maybe Position
   }
 
 configureOptions : GameState -> Options
 configureOptions state =
-  { activeBoardColor = playerColor state.currentPlayer
+  { activeBoardColor = "grey"
+  , inactiveBoardColor = "silver"
+  , emptyCellColor = "white"
+  , activeCellColor = "yellow"
+  , mousePosition = state.mousePosition
   }
 
 type alias Color = String
@@ -57,27 +65,46 @@ makeBlob color elements =
     ]
     elements
 
-viewCell : IsActive -> Cell -> Html.Html Input
-viewCell isActive cell =
+exists : Maybe a -> (a -> Bool) -> Bool
+exists mb pred =
+  case mb of
+    Nothing -> False
+    Just v -> pred v
+
+flatten : List (Maybe a) -> List a
+flatten xs =
+  case xs of
+    Just x :: xs' -> x :: flatten xs'
+    Nothing :: xs' -> flatten xs'
+    [] -> []
+
+viewCell : Options -> IsActive -> Cell -> Html.Html Input
+viewCell options isActive cell =
   let
       color = case cell.value of
-          Empty -> "white"
           Filled player -> playerColor player
+          Empty -> 
+            if exists options.mousePosition (\pos -> pos == cell.position)
+            then options.activeCellColor
+            else options.emptyCellColor
       style = Attr.style
           [ ("background-color", color)
           , ("width", "25px")
           , ("height", "25px")
           , ("margin", "auto")
           ]
-      events = case cell.value of
-          Empty -> [ Events.onClick (Click cell.position) ]
-          Filled _ -> []
+      events = flatten
+        [ Just <| Events.onMouseOver (MouseOver cell.position)
+        , case cell.value of
+            Empty -> Just <| Events.onClick (Click cell.position)
+            Filled _ -> Nothing
+        ]
   in case (isActive, cell.value) of
         (Active, Empty) ->
             Html.button (style :: events) []
 
         _ ->
-            Html.div [ style ] []
+            Html.button [ style, Attr.disabled True ] []
 
 
 
@@ -89,10 +116,10 @@ viewBoard options board =
 
 viewCells options cells isActive =
   let
-      element = makeTable 3 (List.map (viewCell isActive) (A.toList cells))
+      element = makeTable 3 (List.map (viewCell options isActive) (A.toList cells))
       color = case isActive of
         Active -> options.activeBoardColor
-        Inactive -> "grey"
+        Inactive -> options.inactiveBoardColor
   in
       makeBlob color [element]
 
