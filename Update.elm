@@ -26,17 +26,17 @@ handleClick pos state =
 
 setCell : Position -> CellValue -> Grid -> Grid
 setCell pos value grid =
-  withDefault grid <|
-    extractBoard pos.board grid `andThen` \board ->
-      extractCell pos.cell board `andThen` \cell ->
+  withDefault grid (
+    extractBoard pos.board grid |> (andThen (\board ->
+      extractCell pos.cell board |> (andThen (\cell ->
         let
             newGrid = insertBoard (insertCell { cell | value = value } board) grid
             nextActive = {i = pos.cell.r, j = pos.cell.c}
         in 
-            extractBoard nextActive newGrid `andThen` \nextBoard ->
-              Just <| case nextBoard.value of
+            extractBoard nextActive newGrid |> andThen (\nextBoard ->
+              Just (case nextBoard.value of
                 WonBoard _ -> activateEntireGrid newGrid
-                Cells _ _ -> activateBoard nextActive newGrid
+                Cells _ _ -> activateBoard nextActive newGrid)))))))
 
 setActive : IsActive -> Board -> Board
 setActive isActive board =

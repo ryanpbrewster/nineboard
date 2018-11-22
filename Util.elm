@@ -16,5 +16,5 @@ find : (a -> Bool) -> List a -> Maybe a
 find pred xs =
   case xs of
     [] -> Nothing
-    x :: xs' -> if pred x then Just x else find pred xs'
+    x :: xs_ -> if pred x then Just x else find pred xs_
 

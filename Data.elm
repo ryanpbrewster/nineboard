@@ -100,7 +100,7 @@ extractCell loc board =
     Cells cells _ -> A.get (3*loc.r + loc.c) cells
 
 getCell : Position -> Grid -> Maybe Cell
-getCell pos grid = Just grid `andThen` extractBoard pos.board `andThen` extractCell pos.cell
+getCell pos grid = Just grid |> andThen (extractBoard pos.board) |> andThen (extractCell pos.cell)
 
 insertBoard : Board -> Grid -> Grid
 insertBoard board grid =
@@ -127,7 +127,7 @@ boardWinner cells =
       extractLine line = List.filterMap (\idx -> A.get idx cells) line
       lines = List.map extractLine possibleWinLines
   in
-      oneOf (List.map lineWinner lines)
+      List.head (List.filterMap lineWinner lines)
 
 lineWinner : List Cell -> Maybe Player
 lineWinner cells =

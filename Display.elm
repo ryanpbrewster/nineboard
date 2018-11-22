@@ -21,17 +21,17 @@ type alias Options =
 
 configureOptions : GameState -> Options
 configureOptions state =
-  { activeBoardColor = "grey"
+  { activeBoardColor = "gold"
   , inactiveBoardColor = "silver"
   , emptyCellColor = "white"
-  , activeCellColor = "yellow"
+  , activeCellColor = playerColor state.currentPlayer
   , mousePosition = state.mousePosition
   }
 
 type alias Color = String
 playerColor player =
   case player of
-    User -> "blue"
+    User -> "green"
     Computer -> "red"
 
 wrapTableElement : Html.Html a -> Html.Html a
@@ -56,9 +56,9 @@ makeBlob : Color -> List (Html.Html a) -> Html.Html a
 makeBlob color elements =
   Html.div
     [Attr.style
-      [ ("width", "109px")
-      , ("height", "109px")
-      , ("border-radius", "10px")
+      [ ("width", "150px")
+      , ("height", "150px")
+      , ("border-radius", "15px")
       , ("background-color", color)
       , ("margin", "auto")
       ]
@@ -74,8 +74,8 @@ exists mb pred =
 flatten : List (Maybe a) -> List a
 flatten xs =
   case xs of
-    Just x :: xs' -> x :: flatten xs'
-    Nothing :: xs' -> flatten xs'
+    Just x :: xs_ -> x :: flatten xs_
+    Nothing :: xs_ -> flatten xs_
     [] -> []
 
 viewCell : Options -> IsActive -> Cell -> Html.Html Input
@@ -89,8 +89,9 @@ viewCell options isActive cell =
             else options.emptyCellColor
       style = Attr.style
           [ ("background-color", color)
-          , ("width", "25px")
-          , ("height", "25px")
+          , ("width", "40px")
+          , ("height", "40px")
+          , ("border-radius", "5px")
           , ("margin", "auto")
           ]
       events = flatten
@@ -133,10 +134,10 @@ displayGrid options grid =
   in
       Html.div
         [Attr.style
-          [ ("width", "327px")
-          , ("height", "327px")
+          [ ("width", "500px")
+          , ("height", "500px")
           , ("margin", "auto")
-          , ("padding", "10px")
+          , ("padding", "25px")
           ]
         ]
         [makeTable 3 (A.toList boardElements)]
