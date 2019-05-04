@@ -1,3 +1,4 @@
+import Browser
 import Html
 
 import Data
@@ -5,8 +6,8 @@ import Display
 import Update
 
 main =
-  Html.beginnerProgram 
-    { model = Data.initialState
+  Browser.sandbox
+    { init = Data.initialState
     , view = Display.view
     , update = Update.update
     }

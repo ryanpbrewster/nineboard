@@ -43,26 +43,22 @@ makeTable n elements =
       rows = List.map (\row -> Html.tr [] row) (chunks n (List.map wrapTableElement elements))
   in
       Html.table
-        [Attr.style
-          [ ("transform", "translate(-50%, -50%)")
-          , ("top", "50%")
-          , ("left", "50%")
-          , ("position", "relative")
-          ]
+        [ Attr.style "transform" "translate(-50%, -50%)"
+        , Attr.style "top" "50%"
+        , Attr.style "left" "50%"
+        , Attr.style "position" "relative"
         ]
         rows
 
 makeBlob : Color -> List (Html.Html a) -> Html.Html a
 makeBlob color elements =
   Html.div
-    [Attr.style
-      [ ("width", "150px")
-      , ("height", "150px")
-      , ("border-radius", "15px")
-      , ("background-color", color)
-      , ("margin", "auto")
+      [ Attr.style "width" "150px"
+      , Attr.style "height" "150px"
+      , Attr.style "border-radius" "15px"
+      , Attr.style "background-color" color
+      , Attr.style "margin" "auto"
       ]
-    ]
     elements
 
 exists : Maybe a -> (a -> Bool) -> Bool
@@ -87,12 +83,12 @@ viewCell options isActive cell =
             if exists options.mousePosition (\pos -> pos == cell.position)
             then options.activeCellColor
             else options.emptyCellColor
-      style = Attr.style
-          [ ("background-color", color)
-          , ("width", "40px")
-          , ("height", "40px")
-          , ("border-radius", "5px")
-          , ("margin", "auto")
+      style =
+          [ Attr.style "background-color" color
+          , Attr.style "width" "40px"
+          , Attr.style "height" "40px"
+          , Attr.style "border-radius" "5px"
+          , Attr.style "margin" "auto"
           ]
       events = flatten
         [ Just <| Events.onMouseOver (MouseOver cell.position)
@@ -102,10 +98,10 @@ viewCell options isActive cell =
         ]
   in case (isActive, cell.value) of
         (Active, Empty) ->
-            Html.button (style :: events) []
+            Html.button (style ++ events) []
 
         _ ->
-            Html.button [ style, Attr.disabled True ] []
+            Html.button (style ++ [Attr.disabled True]) []
 
 
 
@@ -133,11 +129,9 @@ displayGrid options grid =
       boardElements = A.map (viewBoard options) grid.data
   in
       Html.div
-        [Attr.style
-          [ ("width", "500px")
-          , ("height", "500px")
-          , ("margin", "auto")
-          , ("padding", "25px")
+          [ Attr.style "width" "500px"
+          , Attr.style "height" "500px"
+          , Attr.style "margin" "auto"
+          , Attr.style "padding" "25px"
           ]
-        ]
         [makeTable 3 (A.toList boardElements)]
